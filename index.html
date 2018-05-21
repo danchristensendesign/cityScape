@@ -1,0 +1,261 @@
+<div style="position: relative;">
+	<canvas id="canvas1" width="1500" height="1000" 
+		style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
+	<canvas id="canvas2" width="1500" height="1000" 
+		style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+	<canvas id="canvas3" width="1500" height="1000" 
+		style="position: absolute; left: 0; top: 0; z-index: 2;"></canvas>
+</div>
+
+<script>
+	var canvas = [];
+	var cx = [];
+	var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; 
+	var width = (iOS) ? screen.width : window.innerWidth, height = (iOS) ? screen.height : window.innerHeight;
+	width -= 20;
+	height -= 20;
+	var minW = 4;
+	var maxW = 150;
+	var minH = 20;
+	var maxH = 250;
+	var decW = .3;
+	var decH = .5;
+	var minG = 5;
+	var maxG = 130;
+	var dist = [];
+	var lastTime = new Date().getTime();
+	var incTime = lastTime;
+	var indTime = lastTime;
+	var pause = true;
+	var speedBase = 120;
+	var speed = [];
+	var rows = 20;
+	var backRGB  = [145,150,180];
+	var foreRGB = [60,60,60];
+	var varAmt = 20;
+	var dec = true;
+	var inc = Math.random() > .5 ? -1 : 1;
+	var RGBind = Math.floor(Math.random() * 3);
+	var buildings = [];
+	
+	
+	
+	
+	addEventListener('mousedown', function(event){mouseEvent(event);}); 
+	
+	function setupCanvases()
+	{
+		
+		for(var i = 1; i < 4; i +=1)
+		{
+			var canvasTemp = document.getElementById('canvas' + i);
+			canvasTemp.width = width;
+			canvasTemp.height = height;
+			var cxTemp = canvasTemp.getContext('2d');
+
+			canvas.push(canvasTemp);
+			cx.push(cxTemp);
+		}
+
+	}
+	
+		
+	function building(prevLeft, bottom, blend)
+	{
+		this.RGB = RandRGB(blend);
+		this.blend = blend;
+		this.bottom = bottom;
+		var sizeFact = Math.pow(blend, 7);
+		this.left = prevLeft + (1-sizeFact)* Rand(minG, maxG);
+		var curMinW = Math.max(1, minW * (1 -sizeFact));
+		var curMinH = Math.max(1, minH * (1 - sizeFact));
+		var curMaxW = Math.max(1, maxW * (1 - sizeFact));
+		var curMaxH = Math.max(1, maxH * (1 - sizeFact));
+		this.width = Rand(curMinW, curMaxW);
+		this.height =Rand(curMinH, curMaxH);
+		var curW = this.width;
+		var curH = this.height;
+		this.levels = [];
+		while(curW >=curMinW && curH >= curMinH)
+		{
+			this.levels.push([curW, curH]);
+			curW = Rand(decW * curW, curW);
+			curH = Rand(decH * curH, curH);
+			if(Math.random() > .6)
+			{
+				curW = 0;
+				curH = 0;
+			}
+		}
+		//console.log(this.levels.length);
+	}
+	
+	
+	
+	building.prototype.updateAndDraw = function()
+	{
+		var curTop = this.bottom;
+		var cenLeft = this.left + this.levels[0][0]/2;
+		var curLeft;
+		cx[0].fillStyle = blendRGB(this.blend, this.RGB);
+		
+		for(var i = 0; i< this.levels.length; i += 1)
+		{
+			curLeft = cenLeft - this.levels[i][0]/2;
+			if(curLeft > width)
+				break;
+			else if(curLeft > -this.width)
+			{
+				curTop -= this.levels[i][1];
+				cx[0].fillRect(curLeft, curTop, this.levels[i][0], this.levels[i][1]);
+			}
+		}
+	}
+	setupCanvases();
+	buildCity();
+		
+	function buildCity()
+	{
+		dist = [];
+		speed = [];
+		pause = true;
+		var newBuildings = [];
+		var curTop = height ;
+		for(var x = 0; x < rows; x += 1)
+		{
+			var blend = Math.pow(x/rows, 2);
+			
+			dist.push(0);
+			speed.push(-speedBase*Math.pow(.89,x));
+			//console.log(speed);
+			var curLeft = -10;
+			var numBuild = 30;
+			var buildRow = [];
+			while(curLeft < width)
+			{
+				buildRow.push(new building(curLeft, curTop, blend));
+				curLeft = buildRow[buildRow.length-1].left + buildRow[buildRow.length-1].width ;
+				
+			}
+			newBuildings.push(buildRow);
+			curTop -= 70 * Math.pow((x+1)/rows,2);// Math.pow(1-blend, .001);
+		}
+		buildings = newBuildings;
+		pause = false;
+		animate();
+	}		
+		
+	function Rand(min, max)
+	{
+		return (Math.random() * (max-min) + min);
+	}
+	function RandRGB(blend)
+	{
+		var RGB = [];
+		var varLeft = varAmt;
+		for(var i = 0; i < 3; i += 1)
+		{
+			//console.log(blend);
+			var del = (- varLeft) + Math.random() * (varLeft) * 2;
+			del = Math.min(del, 255-foreRGB[i]);
+			del = Math.max(del, -foreRGB[i]);
+			RGB.push(Math.floor(foreRGB[i]+del));
+			RGB[i] = Math.floor(RGB[i]);
+			
+			varLeft -= Math.abs(del);
+		}
+		return RGB;
+	}
+	
+	function blendRGB(blend, curRGB)
+	{
+		var RGB = [];
+		for( var i = 0; i < 3; i += 1)
+		{
+			RGB.push(Math.floor(curRGB[i] * (1-blend) + backRGB[i] * blend));
+		}
+		return arrToRGB(RGB);
+	}
+	
+	function arrToRGB(arr)
+	{
+		return 'RGB(' + arr[0] + ',' + arr[1] + ',' + arr[2] + ')'; 
+	}
+	
+	function mag(arr)
+	{
+		return arr[0]+arr[1]+arr[2];
+	}
+	
+	function animate()
+	{
+		var nowTime = new Date().getTime();
+		var elapsed = (nowTime-lastTime)/1000;
+		lastTime = nowTime;
+		
+		if(mag(backRGB) < 300)
+		{
+			inc = 1;
+		}
+		if(nowTime - incTime > 30)
+		{
+			if(backRGB[RGBind] + inc > 255 || backRGB[RGBind] + inc < 0)
+			{
+				inc = -inc;
+			}	
+			backRGB[RGBind]+=inc;
+			incTime = nowTime;
+		}
+		if(nowTime - indTime > 2000)
+		{
+			RGBind = Math.floor(Math.random() * 3);
+			indTime = nowTime;
+		}
+		if(pause !== true)
+		{
+			var horiz = buildings[buildings.length-1][0].bottom;
+			cx[0].fillStyle = arrToRGB(backRGB);
+			cx[0].fillRect(0,0,width, horiz);
+			cx[0].fillStyle = blendRGB(.65,foreRGB);
+			cx[0].fillRect(0,horiz,width, height-horiz);
+			for(var x = buildings.length-1; x > -1; x -= 1)
+			{
+				dist[x] = speed[x] * elapsed;
+				if(buildings[x][0].left + buildings[x][0].width + dist[x] < 0)
+				{
+					buildings[x].shift();
+				}
+				if(buildings[x][buildings[x].length-1].left  < width)
+				{
+					buildings[x].push(new building(buildings[x][buildings[x].length-1].left+buildings[x][buildings[x].length-1].width, buildings[x][buildings[x].length-1].bottom,Math.pow(x/rows, 2)));
+					//console.log('new on layer ' + x);
+				}
+				for(var i=0; i < buildings[x].length; i += 1)
+				{
+					buildings[x][i].left += dist[x];
+					buildings[x][i].updateAndDraw();
+				}
+			}
+			requestAnimationFrame(animate);
+		}
+		
+	}
+		
+	function mouseEvent(event)
+	{
+		pause = !pause;
+		if(pause === false)
+		{
+			lastTime = new Date().getTime();
+			incTime = lastTime;
+			indTime = lastTime;
+			animate();
+		}
+	}
+	
+	
+	
+	
+</script>
+	
+			

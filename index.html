@@ -10,8 +10,10 @@
 <script>
 	var canvas = [];
 	var cx = [];
-	var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; 
-	var width = (iOS) ? screen.width : window.innerWidth, height = (iOS) ? screen.height : window.innerHeight;
+	//var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; 
+	//var width = (iOS) ? screen.width : window.innerWidth, height = (iOS) ? screen.height : window.innerHeight;
+	var width = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
+	var height = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
 	width -= 20;
 	height -= 20;
 	var minW = 4;

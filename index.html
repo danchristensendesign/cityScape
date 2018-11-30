@@ -293,6 +293,7 @@ var isMobile = true;
 				return;
 			case 'touchend': 
 				if(Math.abs(firstX - lastX) + Math.abs(firstY - lastY) > 10) return;
+				break;
 			case 'mousemove': 
 				if(isMobile)
 				{

@@ -1,4 +1,4 @@
-<div style="position: relative;">
+<div id="canvDiv" class="unselectable" style="position:absolute;">
 	<canvas id="canvas1" width="1500" height="1000" 
 		style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
 	<canvas id="canvas2" width="1500" height="1000" 
@@ -8,38 +8,42 @@
 </div>
 
 <script>
-	var canvas = [];
-	var cx = [];
-	//var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; 
-	//var width = (iOS) ? screen.width : window.innerWidth, height = (iOS) ? screen.height : window.innerHeight;
-	var width = 300; //= (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
-	var height = 300;// = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
-/* 	width -= 20;
-	height -= 20; */
-	var minW = 4;
-	var maxW = 150;
-	var minH = 20;
-	var maxH = 250;
-	var decW = .3;
-	var decH = .5;
-	var minG = 5;
-	var maxG = 130;
-	var dist = [];
-	var lastTime = new Date().getTime();
-	var incTime = lastTime;
-	var indTime = lastTime;
-	var pause = true;
-	var speedBase = 120;
-	var speed = [];
-	var rows = 20;
-	var backRGB  = [145,150,180];
-	var foreRGB = [60,60,60];
-	var varAmt = 20;
-	var dec = true;
-	var inc = Math.random() > .5 ? -1 : 1;
-	var RGBind = Math.floor(Math.random() * 3);
-	var buildings = [];
-	
+
+var canvas = [];
+var cx = [];
+
+var minW = 4;
+var maxW = 150;
+var minH = 20;
+var maxH = 250;
+var decW = .3;
+var decH = .5;
+var minG = 5;
+var maxG = 130;
+var dist = [];
+var lastTime = new Date().getTime();
+var incTime = lastTime;
+var indTime = lastTime;
+var pause = true;
+var speedBase = 120;
+var speed = [];
+var rows = 20;
+var backRGB  = [145,150,180];
+var foreRGB = [60,60,60];
+var varAmt = 20;
+var dec = true;
+var inc = Math.random() > .5 ? -1 : 1;
+var RGBind = Math.floor(Math.random() * 3);
+var buildings = [];
+var scrollAmt = 150;
+var screenT = 0;
+var screenL = 0;
+var screenW = 300;
+var screenH = 300;
+
+var mainDiv = document.getElementById("canvDiv");
+mainDiv.style.left = 0 + 'px';
+mainDiv.style.top = 0 + 'px';
 	
 	
 	addEventListener('mousedown', mouseEvent); 
@@ -48,14 +52,20 @@
 	
 	function setupCanvases()
 	{
+			
+
+		screenT = (window.pageYOffset || document.documentElement.scrollTop);
+		screenL = (window.pageXOffset || document.documentElement.scrollLeft);
 		
-		width = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
-		height = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
+		screenW = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
+		screenH = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
+
+
 		for(var i = 1; i < 4; i +=1)
 		{
 			var canvasTemp = document.getElementById('canvas' + i);
-			canvasTemp.width = width;
-			canvasTemp.height = height;
+			canvasTemp.width = screenW + scrollAmt;
+			canvasTemp.height = screenH + scrollAmt;
 			var cxTemp = canvasTemp.getContext('2d');
 
 			canvas.push(canvasTemp);
@@ -108,7 +118,7 @@
 		for(var i = 0; i< this.levels.length; i += 1)
 		{
 			curLeft = cenLeft - this.levels[i][0]/2;
-			if(curLeft > width)
+			if(curLeft > screenW + screenL)
 				break;
 			else if(curLeft > -this.width)
 			{
@@ -126,7 +136,7 @@
 		speed = [];
 		pause = true;
 		var newBuildings = [];
-		var curTop = height ;
+		var curTop = screenH ;
 		for(var x = 0; x < rows; x += 1)
 		{
 			var blend = Math.pow(x/rows, 2);
@@ -137,7 +147,7 @@
 			var curLeft = -10;
 			var numBuild = 30;
 			var buildRow = [];
-			while(curLeft < width)
+			while(curLeft < screenW + screenL)
 			{
 				buildRow.push(new building(curLeft, curTop, blend));
 				curLeft = buildRow[buildRow.length-1].left + buildRow[buildRow.length-1].width ;
@@ -199,9 +209,17 @@
 		var elapsed = (nowTime-lastTime)/1000;
 		lastTime = nowTime;
 		
-		var screenW = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
-		var screenH = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
-		if(screenW !== width || screenH !== height) setupCanvases();
+		//check for screen changes
+		var curL = (window.pageXOffset || document.documentElement.scrollLeft);
+		var curT = (window.pageYOffset || document.documentElement.scrollTop);
+		var curW = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
+		var curH = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
+		
+		if(curL !== screenL || curT !== screenT || curW !== screenW || curH !== screenH)
+		{
+			setupCanvases();
+		}
+		
 		
 		if(mag(backRGB) < 300)
 		{
@@ -221,21 +239,23 @@
 			RGBind = Math.floor(Math.random() * 3);
 			indTime = nowTime;
 		}
+		
+		
 		if(pause !== true)
 		{
 			var horiz = buildings[buildings.length-1][0].bottom;
 			cx[0].fillStyle = arrToRGB(backRGB);
-			cx[0].fillRect(0,0,width, horiz);
+			cx[0].fillRect(screenL,screenT,screenW, horiz);
 			cx[0].fillStyle = blendRGB(.65,foreRGB);
-			cx[0].fillRect(0,horiz,width, height-horiz);
+			cx[0].fillRect(screenL,screenT + horiz, screenW, screenH-horiz);
 			for(var x = buildings.length-1; x > -1; x -= 1)
 			{
 				dist[x] = speed[x] * elapsed;
-				if(buildings[x][0].left + buildings[x][0].width + dist[x] < 0)
+				if(buildings[x][0].left + buildings[x][0].width + dist[x] < screenL)
 				{
 					buildings[x].shift();
 				}
-				if(buildings[x][buildings[x].length-1].left  < width)
+				if(buildings[x][buildings[x].length-1].left  < screenL + screenW)
 				{
 					buildings[x].push(new building(buildings[x][buildings[x].length-1].left+buildings[x][buildings[x].length-1].width, buildings[x][buildings[x].length-1].bottom,Math.pow(x/rows, 2)));
 					//console.log('new on layer ' + x);

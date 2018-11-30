@@ -78,10 +78,11 @@ var isHeld = false;
 			cx.push(cxTemp);
 		}
 		var fact = Math.min(screenW/1920, screenH/1080);
-		var minW = 4;
-		var maxW = 150 * fact;
-		var minH = 20 * fact;
-		var maxH = 250 * fact;
+		minW = 4;
+		maxW = 150 * fact;
+		minH = 20 * fact;
+		maxH = 250 * fact;
+		maxG = 600 * fact;
 		buildCity();
 
 	}

@@ -12,10 +12,10 @@
 	var cx = [];
 	//var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; 
 	//var width = (iOS) ? screen.width : window.innerWidth, height = (iOS) ? screen.height : window.innerHeight;
-	var width = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
-	var height = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
-	width -= 20;
-	height -= 20;
+	var width = 300; //= (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
+	var height = 300;// = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
+/* 	width -= 20;
+	height -= 20; */
 	var minW = 4;
 	var maxW = 150;
 	var minH = 20;
@@ -42,12 +42,15 @@
 	
 	
 	
-	
-	addEventListener('mousedown', function(event){mouseEvent(event);}); 
+	addEventListener('mousedown', mouseEvent); 
+	addEventListener('touchstart', mouseEvent); 
+	//addEventListener('mousedown', function(event){mouseEvent(event);}); 
 	
 	function setupCanvases()
 	{
 		
+		width = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
+		height = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
 		for(var i = 1; i < 4; i +=1)
 		{
 			var canvasTemp = document.getElementById('canvas' + i);
@@ -58,6 +61,7 @@
 			canvas.push(canvasTemp);
 			cx.push(cxTemp);
 		}
+		buildCity();
 
 	}
 	
@@ -114,7 +118,7 @@
 		}
 	}
 	setupCanvases();
-	buildCity();
+	
 		
 	function buildCity()
 	{
@@ -195,6 +199,10 @@
 		var elapsed = (nowTime-lastTime)/1000;
 		lastTime = nowTime;
 		
+		var screenW = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
+		var screenH = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
+		if(screenW !== width || screenH !== height) setupCanvases();
+		
 		if(mag(backRGB) < 300)
 		{
 			inc = 1;
@@ -243,7 +251,7 @@
 		
 	}
 		
-	function mouseEvent(event)
+	function mouseEvent(e)
 	{
 		pause = !pause;
 		if(pause === false)

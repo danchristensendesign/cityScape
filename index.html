@@ -46,17 +46,19 @@ mainDiv.style.left = 0 + 'px';
 mainDiv.style.top = 0 + 'px';
 var firstX, firstY;
 var lastX, lastY;
+var isMobile = true;
 	
 	addEventListener('mousedown', mouseEvent); 
 	addEventListener('touchstart', mouseEvent); 
 	addEventListener('touchmove', mouseEvent); 
 	addEventListener('touchend', mouseEvent); 
+	addEventListener('mousemove', mouseEvent);
 	//addEventListener('mousedown', function(event){mouseEvent(event);}); 
 	
 	function setupCanvases()
 	{
 			
-
+		if(!isMobile) scrollAmt = 0;
 		screenT = (window.pageYOffset || document.documentElement.scrollTop);
 		screenL = (window.pageXOffset || document.documentElement.scrollLeft);
 		
@@ -126,7 +128,7 @@ var lastX, lastY;
 			else if(curLeft > -this.width)
 			{
 				curTop -= this.levels[i][1];
-				cx[0].fillRect(curLeft, curTop, this.levels[i][0], this.levels[i][1]);
+				cx[0].fillRect(curLeft + screenL, curTop + screenT, this.levels[i][0], this.levels[i][1]);
 			}
 		}
 	}
@@ -223,50 +225,53 @@ var lastX, lastY;
 			setupCanvases();
 		}
 		
-		
-		if(mag(backRGB) < 300)
+		else
 		{
-			inc = 1;
-		}
-		if(nowTime - incTime > 30)
-		{
-			if(backRGB[RGBind] + inc > 255 || backRGB[RGBind] + inc < 0)
+			
+			if(mag(backRGB) < 300)
 			{
-				inc = -inc;
-			}	
-			backRGB[RGBind]+=inc;
-			incTime = nowTime;
-		}
-		if(nowTime - indTime > 2000)
-		{
-			RGBind = Math.floor(Math.random() * 3);
-			indTime = nowTime;
-		}
-		
-		
-		if(pause !== true)
-		{
-			var horiz = buildings[buildings.length-1][0].bottom;
-			cx[0].fillStyle = arrToRGB(backRGB);
-			cx[0].fillRect(screenL,screenT,screenW, horiz);
-			cx[0].fillStyle = blendRGB(.65,foreRGB);
-			cx[0].fillRect(screenL,screenT + horiz, screenW, screenH-horiz);
-			for(var x = buildings.length-1; x > -1; x -= 1)
+				inc = 1;
+			}
+			if(nowTime - incTime > 30)
 			{
-				dist[x] = speed[x] * elapsed;
-				if(buildings[x][0].left + buildings[x][0].width + dist[x] < screenL)
+				if(backRGB[RGBind] + inc > 255 || backRGB[RGBind] + inc < 0)
 				{
-					buildings[x].shift();
-				}
-				if(buildings[x][buildings[x].length-1].left  < screenL + screenW)
+					inc = -inc;
+				}	
+				backRGB[RGBind]+=inc;
+				incTime = nowTime;
+			}
+			if(nowTime - indTime > 2000)
+			{
+				RGBind = Math.floor(Math.random() * 3);
+				indTime = nowTime;
+			}
+			
+			
+			if(pause !== true)
+			{
+				var horiz = buildings[buildings.length-1][0].bottom;
+				cx[0].fillStyle = arrToRGB(backRGB);
+				cx[0].fillRect(screenL,screenT,screenW, horiz);
+				cx[0].fillStyle = blendRGB(.65,foreRGB);
+				cx[0].fillRect(screenL,screenT + horiz, screenW, screenH-horiz);
+				for(var x = buildings.length-1; x > -1; x -= 1)
 				{
-					buildings[x].push(new building(buildings[x][buildings[x].length-1].left+buildings[x][buildings[x].length-1].width, buildings[x][buildings[x].length-1].bottom,Math.pow(x/rows, 2)));
-					//console.log('new on layer ' + x);
-				}
-				for(var i=0; i < buildings[x].length; i += 1)
-				{
-					buildings[x][i].left += dist[x];
-					buildings[x][i].updateAndDraw();
+					dist[x] = speed[x] * elapsed;
+					if(buildings[x][0].left + buildings[x][0].width + dist[x] < screenL)
+					{
+						buildings[x].shift();
+					}
+					if(buildings[x][buildings[x].length-1].left  < screenL + screenW)
+					{
+						buildings[x].push(new building(buildings[x][buildings[x].length-1].left+buildings[x][buildings[x].length-1].width, buildings[x][buildings[x].length-1].bottom,Math.pow(x/rows, 2)));
+						//console.log('new on layer ' + x);
+					}
+					for(var i=0; i < buildings[x].length; i += 1)
+					{
+						buildings[x][i].left += dist[x];
+						buildings[x][i].updateAndDraw();
+					}
 				}
 			}
 			requestAnimationFrame(animate);
@@ -288,6 +293,13 @@ var lastX, lastY;
 				return;
 			case 'touchend': 
 				if(Math.abs(firstX - lastX) + Math.abs(firstY - lastY) < 10) return;
+			case 'mousemove': 
+				if(isMobile)
+				{
+					isMobile = false;
+					setupCanvases();
+				}
+				return;
 		}
 		pause = !pause;
 		if(pause === false)

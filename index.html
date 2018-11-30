@@ -143,6 +143,7 @@ var isHeld = false;
 		pause = true;
 		var newBuildings = [];
 		var curTop = screenH ;
+		var perH = 70 * screenH/1080;
 		for(var x = 0; x < rows; x += 1)
 		{
 			var blend = Math.pow(x/rows, 2);
@@ -160,7 +161,7 @@ var isHeld = false;
 				
 			}
 			newBuildings.push(buildRow);
-			curTop -= 70 * Math.pow((x+1)/rows,2);// Math.pow(1-blend, .001);
+			curTop -= perH * Math.pow((x+1)/rows,2);// Math.pow(1-blend, .001);
 		}
 		buildings = newBuildings;
 		pause = false;

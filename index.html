@@ -47,6 +47,7 @@ mainDiv.style.top = 0 + 'px';
 var firstX, firstY;
 var lastX, lastY;
 var isMobile = true;
+var isHeld = false;
 	
 	addEventListener('mousedown', mouseEvent); 
 	addEventListener('touchstart', mouseEvent); 
@@ -219,7 +220,7 @@ var isMobile = true;
 		var curW = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
 		var curH = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
 		
-		if(curT !== screenT || curW !== screenW || curH !== screenH)
+		if(!isHeld && (curT !== screenT || curW !== screenW || curH !== screenH))
 		{
 			setupCanvases();
 		}
@@ -285,12 +286,14 @@ var isMobile = true;
 			case 'touchstart': 
 				firstX = e.touches[0].clientX;
 				firstY = e.touches[0].clientY;
+				isHeld = true;
 				return;
 			case 'touchmove': 
 				lastX = e.touches[0].clientX;
 				lastY = e.touches[0].clientY;
 				return;
 			case 'touchend': 
+				isHeld = false;
 				if(Math.abs(firstX - lastX) + Math.abs(firstY - lastY) > 10) return;
 				break;
 			case 'mousemove': 

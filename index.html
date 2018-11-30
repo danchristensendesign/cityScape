@@ -292,7 +292,7 @@ var isMobile = true;
 				lastY = e.touches[0].clientY;
 				return;
 			case 'touchend': 
-				if(Math.abs(firstX - lastX) + Math.abs(firstY - lastY) < 10) return;
+				if(Math.abs(firstX - lastX) + Math.abs(firstY - lastY) > 10) return;
 			case 'mousemove': 
 				if(isMobile)
 				{

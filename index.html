@@ -37,7 +37,7 @@ var RGBind = Math.floor(Math.random() * 3);
 var buildings = [];
 var scrollAmt = 150;
 var screenT = 0;
-var screenL = 0;
+//var screenL = 0;
 var screenW = 300;
 var screenH = 300;
 
@@ -60,7 +60,7 @@ var isMobile = true;
 			
 		if(!isMobile) scrollAmt = 0;
 		screenT = (window.pageYOffset || document.documentElement.scrollTop);
-		screenL = (window.pageXOffset || document.documentElement.scrollLeft);
+		window.scrollTo(0, screenT);
 		
 		screenW = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
 		screenH = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
@@ -123,12 +123,12 @@ var isMobile = true;
 		for(var i = 0; i< this.levels.length; i += 1)
 		{
 			curLeft = cenLeft - this.levels[i][0]/2;
-			if(curLeft > screenW + screenL)
+			if(curLeft > screenW)
 				break;
 			else if(curLeft > -this.width)
 			{
 				curTop -= this.levels[i][1];
-				cx[0].fillRect(curLeft + screenL, curTop + screenT, this.levels[i][0], this.levels[i][1]);
+				cx[0].fillRect(curLeft, curTop + screenT, this.levels[i][0], this.levels[i][1]);
 			}
 		}
 	}
@@ -152,7 +152,7 @@ var isMobile = true;
 			var curLeft = -10;
 			var numBuild = 30;
 			var buildRow = [];
-			while(curLeft < screenW + screenL)
+			while(curLeft < screenW)
 			{
 				buildRow.push(new building(curLeft, curTop, blend));
 				curLeft = buildRow[buildRow.length-1].left + buildRow[buildRow.length-1].width ;
@@ -215,12 +215,11 @@ var isMobile = true;
 		lastTime = nowTime;
 		
 		//check for screen changes
-		var curL = (window.pageXOffset || document.documentElement.scrollLeft);
 		var curT = (window.pageYOffset || document.documentElement.scrollTop);
 		var curW = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
 		var curH = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
 		
-		if(curL !== screenL || curT !== screenT || curW !== screenW || curH !== screenH)
+		if(curT !== screenT || curW !== screenW || curH !== screenH)
 		{
 			setupCanvases();
 		}
@@ -252,17 +251,17 @@ var isMobile = true;
 			{
 				var horiz = buildings[buildings.length-1][0].bottom;
 				cx[0].fillStyle = arrToRGB(backRGB);
-				cx[0].fillRect(screenL,screenT,screenW, horiz);
+				cx[0].fillRect(0,screenT,screenW, horiz);
 				cx[0].fillStyle = blendRGB(.65,foreRGB);
-				cx[0].fillRect(screenL,screenT + horiz, screenW, screenH-horiz);
+				cx[0].fillRect(0,screenT + horiz, screenW, screenH-horiz);
 				for(var x = buildings.length-1; x > -1; x -= 1)
 				{
 					dist[x] = speed[x] * elapsed;
-					if(buildings[x][0].left + buildings[x][0].width + dist[x] < screenL)
+					if(buildings[x][0].left + buildings[x][0].width + dist[x] < 0)
 					{
 						buildings[x].shift();
 					}
-					if(buildings[x][buildings[x].length-1].left  < screenL + screenW)
+					if(buildings[x][buildings[x].length-1].left  <  screenW)
 					{
 						buildings[x].push(new building(buildings[x][buildings[x].length-1].left+buildings[x][buildings[x].length-1].width, buildings[x][buildings[x].length-1].bottom,Math.pow(x/rows, 2)));
 						//console.log('new on layer ' + x);
